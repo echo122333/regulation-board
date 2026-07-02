@@ -209,6 +209,14 @@
   .dchip.c1{background:var(--pri-2)} .dchip.c2{background:var(--coral)} .dchip.c3{background:var(--teal)} .dchip.c4{background:var(--amber)}
   .drow .tot{margin-left:auto;font-size:.8rem;font-weight:800;font-variant-numeric:tabular-nums;color:var(--pri-tx)}
   .btn.mini{padding:8px 15px;font-size:.76rem;border-radius:20px}
+  .mhistbox{background:#fff;border-radius:16px;margin:16px 24px 0;padding:16px 22px;box-shadow:var(--sh)}
+  .mhistbox h4{margin:0 0 10px;font-size:.85rem;font-weight:800;display:flex;align-items:center;gap:7px}
+  .hitem{display:flex;gap:12px;padding:8px 0;border-bottom:1px dashed var(--line);font-size:.8rem;align-items:flex-start}
+  .hitem:last-child{border-bottom:0}
+  .hitem .hd{flex:none;color:var(--pri-tx);font-weight:800;font-variant-numeric:tabular-nums;background:var(--pri-bg);border-radius:8px;padding:2px 9px;font-size:.72rem}
+  .hitem.plain .hd{background:var(--ground);color:var(--sub)}
+  .hitem .hb{flex:1;white-space:pre-wrap;line-height:1.6}
+  .mhistbox .empty{font-size:.77rem;color:var(--sub)}
   /* mobile */
   @media(max-width:820px){
     .app{grid-template-columns:1fr}
@@ -459,6 +467,7 @@
     </div>
     <div class="minfo" id="minfo"></div>
     <div class="msecs" id="msecs"></div>
+    <div class="mhistbox"><h4>🕘 업데이트 이력</h4><div id="mhist"></div></div>
     <div class="medit">
       <h4>✏️ 추진현황 업데이트</h4>
       <div class="frow">
@@ -470,7 +479,7 @@
         <div><label>결과 (선정 등급, 수용 여부 등)</label><input id="e_result" placeholder="예: 우수 선정 / 부처 수용"></div>
         <div><label>후속조치</label><input id="e_follow" placeholder="예: 행안부 경진대회 제출"></div>
       </div>
-      <div><label>비고 메모</label><textarea id="e_note" placeholder="변경 사유·경과를 간단히 기록하세요 (예: 7.15 본심사 결과 반영)"></textarea></div>
+      <div><label>업데이트 메모 (저장 시 아래 이력에 날짜와 함께 기록됩니다)</label><textarea id="e_note" placeholder="예: 본심사 결과 우수 선정 통보 받음"></textarea></div>
       <div class="mbtns">
         <button class="btn pri" id="e_save">저장</button>
         <button class="btn ghost" id="pinbtn">📌 관리 대상 고정</button>
@@ -501,6 +510,10 @@ const pinKey = d => (d.유형||'')+'|'+(d.제목||'');
 let PINS = [];
 try{ PINS = JSON.parse(localStorage.getItem('reg_pins')||'[]'); }catch(e){}
 function savePins(){ try{ localStorage.setItem('reg_pins', JSON.stringify(PINS)); }catch(e){} }
+let LOCAL = {};
+try{ LOCAL = JSON.parse(localStorage.getItem('reg_local')||'{}'); }catch(e){}
+function saveLocal(){ try{ localStorage.setItem('reg_local', JSON.stringify(LOCAL)); }catch(e){} }
+function applyLocal(){ DATA.forEach(d=>{ const o=LOCAL[pinKey(d)]; if(o) Object.assign(d,o); }); }
 const stCls = d => d.상태==='심사중' ? 'review' : done(d) ? 'done' : 'pending';
 const esc = s => String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 
@@ -663,7 +676,7 @@ function openDetail(d){
     `<span class="bdg">${esc(d.유형)}</span><span class="bdg">${esc(d.차수)}</span>` +
     `<span class="bdg st">● ${esc(d.상태)}</span>`;
   document.getElementById('mtitle').textContent = d.제목||'';
-  const infos=[['발굴부서',d.부서],['제안자',d.제안자],['주제/분야',d.분야],['결과',d.결과],['후속조치',d.후속조치],['비고',d.비고]];
+  const infos=[['발굴부서',d.부서],['제안자',d.제안자],['주제/분야',d.분야],['결과',d.결과],['후속조치',d.후속조치]];
   document.getElementById('minfo').innerHTML = infos.filter(x=>x[1]).map(x=>
     `<span><b>${x[0]}</b>${esc(x[1])}</span>`).join('');
   const secs = parseSections(d.세부내용);
@@ -681,11 +694,22 @@ function openDetail(d){
   document.getElementById('e_state').value = d.상태||'발굴';
   document.getElementById('e_result').value = d.결과||'';
   document.getElementById('e_follow').value = d.후속조치||'';
-  document.getElementById('e_note').value = d.비고||'';
+  document.getElementById('e_note').value = '';
+  renderHist(d);
   document.getElementById('e_msg').textContent = '';
   document.getElementById('pinbtn').textContent = PINS.includes(pinKey(d)) ? '📌 고정 해제' : '📌 관리 대상 고정';
   mback.classList.add('on');
   document.body.style.overflow='hidden';
+}
+function renderHist(d){
+  const box = document.getElementById('mhist');
+  const lines = String(d.비고||'').split('\n').map(s=>s.trim()).filter(Boolean);
+  if(!lines.length){ box.innerHTML = '<p class="empty">아직 기록된 이력이 없습니다 — 아래에서 상태를 바꾸거나 메모를 남기고 저장하면 여기에 쌓입니다.</p>'; return; }
+  box.innerHTML = lines.map(l=>{
+    const m = l.match(/^\[([^\]]+)\]\s*(.*)$/);
+    return m ? `<div class="hitem"><span class="hd">${esc(m[1])}</span><span class="hb">${esc(m[2])}</span></div>`
+             : `<div class="hitem plain"><span class="hd">메모</span><span class="hb">${esc(l)}</span></div>`;
+  }).join('');
 }
 function closeDetail(){ mback.classList.remove('on'); document.body.style.overflow=''; }
 document.getElementById('mclose').addEventListener('click',closeDetail);
@@ -704,14 +728,31 @@ document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeDetail(); });
 /* 저장 */
 document.getElementById('e_save').addEventListener('click', async ()=>{
   if(!curDetail) return;
-  const upd = {
-    상태: document.getElementById('e_state').value,
-    결과: document.getElementById('e_result').value.trim(),
-    후속조치: document.getElementById('e_follow').value.trim(),
-    비고: document.getElementById('e_note').value.trim(),
-  };
+  const d = curDetail;
+  const newState = document.getElementById('e_state').value;
+  const newResult = document.getElementById('e_result').value.trim();
+  const newFollow = document.getElementById('e_follow').value.trim();
+  const memo = document.getElementById('e_note').value.trim();
   const msg = document.getElementById('e_msg');
-  Object.assign(curDetail, upd);   /* 화면 즉시 반영 */
+
+  /* 변경 내역 → 이력 한 줄 생성 */
+  const t = new Date();
+  const ds = String(t.getFullYear()).slice(2)+'.'+String(t.getMonth()+1).padStart(2,'0')+'.'+String(t.getDate()).padStart(2,'0');
+  const parts = [];
+  if(newState !== d.상태) parts.push('상태 ' + (d.상태||'-') + ' → ' + newState);
+  if(newResult && newResult !== (d.결과||'')) parts.push('결과: ' + newResult);
+  if(newFollow && newFollow !== (d.후속조치||'')) parts.push('후속조치: ' + newFollow);
+  if(memo) parts.push(memo);
+  if(!parts.length){ msg.textContent = '변경된 내용이 없습니다'; return; }
+  const entry = '[' + ds + '] ' + parts.join(' · ');
+
+  const upd = { 상태:newState, 결과:newResult, 후속조치:newFollow,
+                비고: entry + (d.비고 ? '\n' + d.비고 : '') };
+  Object.assign(d, upd);            /* 화면 즉시 반영 */
+  LOCAL[pinKey(d)] = { 상태:d.상태, 결과:d.결과, 후속조치:d.후속조치, 비고:d.비고 };
+  saveLocal();
+  document.getElementById('e_note').value = '';
+  renderHist(d);
   renderAll();
   if(WRITE_ENDPOINT){
     try{
@@ -721,7 +762,7 @@ document.getElementById('e_save').addEventListener('click', async ()=>{
       msg.textContent = '✓ 시트에 저장 요청을 보냈습니다';
     }catch(e){ msg.textContent = '전송 실패 — 시트에서 직접 수정해주세요'; }
   } else {
-    msg.textContent = '✓ 화면에 반영됨 — 영구 저장은 "구글시트에서 직접 수정"을 이용하세요';
+    msg.textContent = '✓ 이력에 기록됨(이 브라우저에 저장) — 팀 공유·영구 보존은 시트의 비고 칸에 반영하세요';
   }
 });
 
@@ -753,6 +794,7 @@ document.getElementById('e_sheet').addEventListener('click', gateSheet);
     const s = toObjects(parseCSV(await res.text()), null).filter(o=>o.시기);
     if(s.length){ SCHED = s; ok++; }
   }catch(e){}
+  applyLocal();
   LIVE = ok===2;
   src.textContent = ok===2
     ? '구글시트 실시간 연동 · ' + new Date().toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'}) + ' 불러옴'
