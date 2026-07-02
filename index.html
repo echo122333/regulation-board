@@ -1,0 +1,398 @@
+<title>서울관광재단 규제혁신·창의제안 관리</title>
+<style>
+  :root{
+    --ink:#22334a; --sub:#5c6b80; --line:#dde3ea; --ground:#f4f6f8; --card:#ffffff;
+    --navy:#1f3a5f; --navy-d:#182e4c;
+    --t1:#2e6da8; --t1bg:#e9f1f8; --t2:#b0722a; --t2bg:#f8f0e5; --t3:#487952; --t3bg:#eaf3ec;
+    --done:#2e6da8; --pending:#b0722a; --review:#7b5fa8;
+  }
+  html{background:var(--ground)}
+  body{font-family:'Pretendard','Malgun Gothic','Apple SD Gothic Neo',sans-serif;color:var(--ink);
+       margin:0;line-height:1.55}
+  .wrap{max-width:1080px;margin:0 auto;padding:0 20px}
+
+  /* masthead */
+  .mast{background:var(--navy);color:#fff}
+  .mast .wrap{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;padding-top:14px;padding-bottom:0}
+  .brand{padding-bottom:14px}
+  .brand .org{font-size:.72rem;letter-spacing:.14em;color:#9fb3cd;text-transform:uppercase}
+  .brand .site{font-size:1.15rem;font-weight:700;letter-spacing:-.01em}
+  nav{display:flex;gap:2px}
+  nav a{color:#b9c9de;text-decoration:none;font-size:.85rem;font-weight:600;
+        padding:12px 16px;border-radius:6px 6px 0 0;display:block}
+  nav a.on{background:var(--ground);color:var(--ink)}
+  nav a:hover:not(.on){background:var(--navy-d);color:#fff}
+  nav a:focus-visible{outline:2px solid #fff;outline-offset:-2px}
+  .datestrip{background:#fff;border-bottom:1px solid var(--line)}
+  .datestrip .wrap{padding-top:8px;padding-bottom:8px;font-size:.76rem;color:var(--sub);
+        display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+
+  main .wrap{padding-top:28px;padding-bottom:64px}
+  section{display:none}
+  section.on{display:block}
+  h1{font-size:1.35rem;font-weight:700;letter-spacing:-.01em;margin:0 0 4px}
+  .lead{color:var(--sub);font-size:.9rem;margin:0 0 22px;max-width:62ch}
+  h2{font-size:1rem;font-weight:700;margin:0 0 14px}
+
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin:0 0 24px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:16px 18px}
+  .card .label{font-size:.78rem;color:var(--sub);letter-spacing:.04em}
+  .card .num{font-size:1.9rem;font-weight:700;font-variant-numeric:tabular-nums;margin-top:2px}
+  .card .sub{font-size:.78rem;color:var(--sub);margin-top:4px}
+  .card.t1 .num{color:var(--t1)} .card.t2 .num{color:var(--t2)} .card.t3 .num{color:var(--t3)}
+
+  .alerts{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:12px;margin:0 0 28px}
+  .alert{background:var(--card);border:1px solid var(--line);border-left:4px solid var(--review);
+         border-radius:8px;padding:14px 16px}
+  .alert.hot{border-left-color:#b3502e}
+  .alert.soon{border-left-color:var(--pending)}
+  .alert.next{border-left-color:var(--t1)}
+  .alert .when{font-size:.72rem;font-weight:700;letter-spacing:.06em;color:var(--sub)}
+  .alert .what{font-size:.88rem;font-weight:700;margin:3px 0 4px}
+  .alert p{font-size:.79rem;color:var(--sub);margin:0}
+
+  .panelrow{display:grid;grid-template-columns:3fr 2fr;gap:12px;margin-bottom:24px}
+  @media(max-width:760px){.panelrow{grid-template-columns:1fr}}
+  .panel{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:18px 20px;margin-bottom:0}
+  .panel+.panel,.panel+.panelrow,.panelrow+.panel{margin-top:24px}
+  .panel h2{font-size:.95rem}
+  .bar-row{display:grid;grid-template-columns:130px 1fr 34px;align-items:center;gap:10px;margin-bottom:7px}
+  .bar-row .name{font-size:.8rem;color:var(--sub);text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .bar-row .track{display:flex;height:16px;border-radius:3px;overflow:hidden;background:var(--ground)}
+  .bar-row .seg1{background:var(--t1)} .bar-row .seg2{background:var(--t2)} .bar-row .seg3{background:var(--t3)}
+  .bar-row .cnt{font-size:.8rem;font-variant-numeric:tabular-nums;color:var(--sub)}
+  .legend{display:flex;gap:14px;font-size:.75rem;color:var(--sub);margin-top:12px;flex-wrap:wrap}
+  .legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px;vertical-align:-1px}
+  .stat-line{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid var(--line);font-size:.85rem}
+  .stat-line:last-child{border-bottom:0}
+  .stat-line .v{font-weight:700;font-variant-numeric:tabular-nums}
+  .note{font-size:.75rem;color:var(--sub);margin:10px 0 0}
+
+  .filters{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 14px;align-items:center}
+  .fbtn{border:1px solid var(--line);background:var(--card);color:var(--sub);border-radius:20px;
+        padding:5px 14px;font-size:.8rem;cursor:pointer;font-family:inherit}
+  .fbtn.on{background:var(--ink);border-color:var(--ink);color:#fff}
+  .fbtn:focus-visible,input[type=search]:focus-visible{outline:2px solid var(--t1);outline-offset:2px}
+  input[type=search]{border:1px solid var(--line);border-radius:6px;padding:6px 10px;font-size:.8rem;
+        font-family:inherit;flex:1;min-width:160px;background:var(--card);color:var(--ink)}
+  .tablewrap{overflow-x:auto;background:var(--card);border:1px solid var(--line);border-radius:8px}
+  table{border-collapse:collapse;width:100%;font-size:.82rem;min-width:780px}
+  th{background:#f0f3f6;color:var(--sub);font-weight:600;text-align:left;padding:9px 12px;
+     font-size:.75rem;letter-spacing:.03em;white-space:nowrap;border-bottom:1px solid var(--line)}
+  td{padding:9px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+  tr:last-child td{border-bottom:0}
+  td.num{color:var(--sub);font-variant-numeric:tabular-nums}
+  .chip{display:inline-block;font-size:.72rem;font-weight:600;padding:2px 9px;border-radius:11px;white-space:nowrap}
+  .chip.t1{background:var(--t1bg);color:var(--t1)} .chip.t2{background:var(--t2bg);color:#8a5a20}
+  .chip.t3{background:var(--t3bg);color:var(--t3)}
+  .st{display:inline-flex;align-items:center;gap:5px;font-size:.78rem;white-space:nowrap}
+  .st::before{content:'';width:7px;height:7px;border-radius:50%;background:var(--done)}
+  .st.pending::before{background:var(--pending)} .st.pending{color:#8a5a20}
+  .st.review::before{background:var(--review)} .st.review{color:#5e4a85}
+  .count-note{font-size:.78rem;color:var(--sub);margin:10px 2px}
+
+  /* programs */
+  .prog{background:var(--card);border:1px solid var(--line);border-radius:8px;margin-bottom:20px;overflow:hidden}
+  .prog header{padding:16px 20px 14px;border-bottom:1px solid var(--line);display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
+  .prog header h2{margin:0;font-size:1.05rem}
+  .prog header .src{font-size:.73rem;color:var(--sub)}
+  .prog.p1 header{background:var(--t1bg)} .prog.p2 header{background:var(--t2bg)} .prog.p3 header{background:var(--t3bg)}
+  .prog dl{display:grid;grid-template-columns:130px 1fr;gap:0;margin:0;padding:6px 0}
+  .prog dt{font-size:.78rem;font-weight:700;color:var(--sub);padding:9px 20px;border-top:1px solid #eef1f5}
+  .prog dd{font-size:.84rem;margin:0;padding:9px 20px 9px 0;border-top:1px solid #eef1f5}
+  .prog dt:first-of-type,.prog dd:first-of-type{border-top:0}
+  @media(max-width:640px){.prog dl{grid-template-columns:1fr}.prog dt{padding-bottom:0;border-top:1px solid #eef1f5}.prog dd{border-top:0;padding-left:20px}}
+  .prog dd b{font-weight:700}
+  .mini{border-collapse:collapse;font-size:.78rem;margin-top:4px}
+  .mini th,.mini td{border:1px solid var(--line);padding:4px 10px;text-align:center;min-width:0}
+  .mini th{background:var(--ground);font-size:.72rem}
+
+  /* schedule */
+  .flow{display:grid;grid-template-columns:150px 1fr;gap:12px;align-items:start;padding:12px 0;border-bottom:1px solid var(--line)}
+  .flow:last-of-type{border-bottom:0}
+  .flow .fname{font-size:.82rem;font-weight:700;padding-top:2px}
+  .flow .fname small{display:block;font-weight:400;color:var(--sub);font-size:.72rem;margin-top:2px}
+  .stages{display:flex;flex-wrap:wrap;gap:4px 2px;align-items:center}
+  .stage{font-size:.73rem;border:1px solid var(--line);border-radius:4px;padding:3px 9px;color:var(--sub);background:var(--ground);white-space:nowrap}
+  .stage.cur{background:var(--ink);border-color:var(--ink);color:#fff;font-weight:600}
+  .arr{color:#b9c2cd;font-size:.75rem;margin:0 3px}
+  @media(max-width:640px){.flow{grid-template-columns:1fr}}
+  .months{display:grid;grid-template-columns:76px 1fr;margin-top:4px}
+  .months .m{font-size:.8rem;font-weight:700;padding:10px 0;border-top:1px solid var(--line);color:var(--navy)}
+  .months .d{font-size:.83rem;padding:10px 0;border-top:1px solid var(--line)}
+  .months .m:first-child,.months .m:first-child+.d{border-top:0}
+  .tag{display:inline-block;font-size:.68rem;font-weight:700;padding:1px 7px;border-radius:3px;margin-right:6px;vertical-align:1px}
+  .tag.g1{background:var(--t1bg);color:var(--t1)} .tag.g2{background:var(--t2bg);color:#8a5a20} .tag.g3{background:var(--t3bg);color:var(--t3)}
+
+  footer{border-top:1px solid var(--line);background:#fff}
+  footer .wrap{padding:18px 20px;font-size:.75rem;color:var(--sub);display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+</style>
+
+<div class="mast"><div class="wrap">
+  <div class="brand">
+    <div class="org">Seoul Tourism Organization</div>
+    <div class="site">규제혁신·창의제안 통합 관리</div>
+  </div>
+  <nav id="nav">
+    <a href="#home" class="on">홈</a>
+    <a href="#status">과제 현황</a>
+    <a href="#programs">제도 안내</a>
+    <a href="#schedule">연간 일정</a>
+  </nav>
+</div></div>
+<div class="datestrip"><div class="wrap">
+  <span>기준일 <b>2026-07-02</b> · 공개용 페이지 — 개인정보(성명·연락처) 미포함</span>
+  <span id="totline"></span>
+</div></div>
+
+<main><div class="wrap">
+
+<!-- ================= 홈 ================= -->
+<section id="home" class="on">
+  <h1>2026년 제출 현황 한눈에</h1>
+  <p class="lead">창의제안·규제혁신 우수사례·법령제도개선 건의과제의 발굴부터 제출, 심사, 후속조치까지 한곳에서 관리합니다.</p>
+  <div class="cards" id="cards"></div>
+  <h2>지금 챙길 일정</h2>
+  <div class="alerts">
+    <div class="alert hot">
+      <div class="when">7월 중 · 진행 중</div>
+      <div class="what">규제혁신 우수사례 본심사</div>
+      <p>제출한 4건이 서울시 예비심사 통과 여부 확인 단계입니다. 본심사(규제개혁위원회) 결과가 나오면 상태를 업데이트하세요.</p>
+    </div>
+    <div class="alert soon">
+      <div class="when">~ 8. 31.</div>
+      <div class="what">행안부 규제합리화 경진대회 제출</div>
+      <p>시 우수사례 선정 시 상위 사례가 행안부 경진대회에 우선 제출됩니다. 우수사례 공적기간도 8.31로 종료됩니다.</p>
+    </div>
+    <div class="alert next">
+      <div class="when">3분기</div>
+      <div class="what">창의제안 3차 · 법령제도개선 3분기 건의</div>
+      <p>분기별 접수가 다시 시작됩니다. 부서별 아이디어 발굴을 미리 안내하면 마감 전 취합이 수월합니다.</p>
+    </div>
+  </div>
+  <div class="panelrow">
+    <div class="panel">
+      <h2>부서별 발굴 실적</h2>
+      <div id="deptbars"></div>
+      <div class="legend">
+        <span><i style="background:var(--t1)"></i>창의제안</span>
+        <span><i style="background:var(--t2)"></i>규제혁신 우수사례</span>
+        <span><i style="background:var(--t3)"></i>법령제도개선</span>
+      </div>
+    </div>
+    <div class="panel">
+      <h2>진행 단계</h2>
+      <div id="statlines"></div>
+      <p class="note">규제혁신 우수사례 4건은 서울시 심사가 진행 중이라 <b>심사중</b>, 창의제안 2차 12건은 추진현황 확인 전이라 <b>발굴</b>로 분류했습니다.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 과제 현황 ================= -->
+<section id="status">
+  <h1>전체 과제 목록</h1>
+  <p class="lead">유형별 필터와 검색으로 개별 과제의 발굴부서·진행상태를 확인합니다.</p>
+  <div class="panel">
+    <div class="filters" id="typefilters"></div>
+    <div class="filters">
+      <input type="search" id="q" placeholder="제목·부서 검색">
+    </div>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>번호</th><th>유형</th><th>차수/분기</th><th>발굴부서</th><th>제목</th><th>주제/분야</th><th>진행상태</th></tr></thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+    <p class="count-note" id="cnote"></p>
+  </div>
+</section>
+
+<!-- ================= 제도 안내 ================= -->
+<section id="programs">
+  <h1>제도 안내</h1>
+  <p class="lead">세 제도의 근거·절차·심사기준·인센티브 요약입니다. 재단은 서울시 투자·출연기관 기준이 적용됩니다.</p>
+
+  <div class="prog p1">
+    <header><h2>창의제안</h2><span class="src">우수 창의제안 발굴·관리체계 안내서 (서울시 기획조정실, '26.3.)</span></header>
+    <dl>
+      <dt>대상·접수</dt><dd>서울시·자치구 공무원, 투자·출연기관 직원. <b>상시 접수</b> — 재단은 자체 취합·심사 후 서울시(창의규제담당관)로 제출</dd>
+      <dt>선정</dt><dd><b>분기별 연 4회</b>, 우수제안 10건 내외 (대상 1 · 최우수 1 · 우수 3 · 장려 5)</dd>
+      <dt>평가기준</dt><dd>실현가능성 · 창의성 · 중요도 · 효과성 <span style="color:var(--sub)">(기추진·단순건의·중복 제안은 D등급 제외)</span></dd>
+      <dt>제안등급</dt><dd><b>A</b> 우수선정·즉시 이행관리 / <b>B</b> 우수하나 즉시추진 곤란·보완발전 / <b>C</b> 정책참고 / <b>D</b> 관리종료</dd>
+      <dt>공동제안</dt><dd>최대 3인(타업무 실행자 포함 시 5인), <b>기여도 합산 100%</b> — 포상금·인사보상의 배분 기준이므로 제출 전 협의 필수</dd>
+      <dt>포상</dt><dd>
+        <table class="mini"><tr><th>대상</th><th>최우수</th><th>우수</th><th>장려</th></tr>
+        <tr><td>800만원</td><td>500만원</td><td>300만원</td><td>100만원</td></tr></table>
+        + 특별휴가·글로벌정책체험·학습시간(건당 최대 5시간, 연 30시간). <b>투출기관 포상금은 기관 예산 내 지급</b></dd>
+      <dt>후속연계</dt><dd>우수 이상 제안 → 행안부 중앙우수제안 추천(연 1회), 선정 시 특별승급 등 인사보상 가능</dd>
+    </dl>
+  </div>
+
+  <div class="prog p2">
+    <header><h2>규제혁신 우수사례</h2><span class="src">'26년 규제혁신 우수사례 선발계획 (창의규제담당관-4331, '26.5.8.)</span></header>
+    <dl>
+      <dt>근거</dt><dd>행정규제기본법 제37조, 서울시 규제개혁 기본 조례 제25조</dd>
+      <dt>공적기간</dt><dd><b>'25. 7. 1. ~ '26. 8. 31.</b> (제도개선 <b>완료</b> 시점 기준 — 8월까지 완료 예정 과제는 제출 가능)</dd>
+      <dt>제출</dt><dd>'26. 5. 12. ~ 6. 15. 공문 제출. <b>투출기관은 1건 이내</b>(규제 총괄부서 수합 후 선정 제출) ※ 타 대회 기입상 사례 제외</dd>
+      <dt>선발분야</dt><dd>① 민생규제 개선 ② 지역산업 규제 개선 ③ 자치법규 개선</dd>
+      <dt>심사절차</dt><dd>실무검토(6.16~19) → 1차 예비심사(6.22~26, 2배수) → 2차 예비심사(6.29~7.3, 1배수) → <b>본심사(7월, 규제개혁위원회)</b> → 시상(7월)</dd>
+      <dt>심사기준</dt><dd>
+        <table class="mini"><tr><th>창의성</th><th>난이도</th><th>효과성</th><th>확산가능성</th><th>계</th></tr>
+        <tr><td>30</td><td>40</td><td>20</td><td>10</td><td>100</td></tr></table></dd>
+      <dt>선발·포상</dt><dd>최우수 2 · 우수 4 · 장려 8. <b>투출기관은 시장상장만 수여</b>(공직선거법상 포상금 제외), 특별휴가는 기관별 부여</dd>
+      <dt>후속연계</dt><dd>상위 우수사례 → <b>행안부 규제합리화 경진대회 제출('26.8.31. 한)</b>, 유공 표창 대상자 추천(~12월)</dd>
+    </dl>
+  </div>
+
+  <div class="prog p3">
+    <header><h2>법령제도개선 건의과제</h2><span class="src">2026년 지방규제혁신 추진계획 (행정안전부 민생경제지원과, '26.2.26.)</span></header>
+    <dl>
+      <dt>개요</dt><dd>지역 현장의 불합리한 <b>중앙법령·제도 규제</b>를 발굴해 서울시(창의규제담당관)를 거쳐 행안부·소관부처에 개선 건의</dd>
+      <dt>제출주기</dt><dd><b>분기별 정기건의</b> + 수시건의</dd>
+      <dt>중점분야</dt><dd><b>민생규제 4대 분야</b>: 국민생활 불편 해소 / 소상공인·자영업자 영업규제 / 사회적약자 / 생명·안전 (국정19)<br>
+        <b>지역산업규제 3대 분야</b>: 지역 전통산업 / 서비스산업(콘텐츠·관광·의료 등) / 신산업(AI·드론 등) (국정36)</dd>
+      <dt>처리절차</dt><dd>과제 발굴·부처협의 → 현장분석 → 지방규제혁신위원회 검토·조정(민생·지역산업 분과위, 규제책임위원) → 규제합리화위원회 보고</dd>
+      <dt>수용률</dt><dd>부처 수용률 약 <b>10%</b> 수준('25년 195건 수용) — 규제의 실효성·적정성 분석과 구체적 대안 제시가 수용률을 좌우</dd>
+      <dt>이행점검</dt><dd>수용 과제는 상·하반기 이행여부 점검 — <b>제출 후에도 수용여부·후속조치 추적 필요</b></dd>
+      <dt>성과평가</dt><dd>행안부 성과평가 4개 지표: 추진계획 수립 / 건의과제 수용실적 / 자치법규 정비실적 / 경진대회 우수사례 선정 → 우수기관 특별교부세·정부포상</dd>
+    </dl>
+  </div>
+</section>
+
+<!-- ================= 연간 일정 ================= -->
+<section id="schedule">
+  <h1>연간 추진 일정</h1>
+  <p class="lead">제도별 프로세스의 현재 위치(짙은 칸)와 월별 주요 일정입니다.</p>
+  <div class="panel">
+    <h2>제도별 현재 위치 <span style="font-weight:400;color:var(--sub);font-size:.78rem">(2026-07-02 기준)</span></h2>
+    <div class="flow">
+      <div class="fname">창의제안<small>분기별 선정 · 연 4회</small></div>
+      <div class="stages">
+        <span class="stage">상시 접수</span><span class="arr">→</span>
+        <span class="stage">재단 취합·제출</span><span class="arr">→</span>
+        <span class="stage cur">서울시 검토·등급부여</span><span class="arr">→</span>
+        <span class="stage">평가단 심사·우수제안 선정</span><span class="arr">→</span>
+        <span class="stage">포상</span><span class="arr">→</span>
+        <span class="stage">행안부 중앙우수제안 추천(연 1회)</span>
+      </div>
+    </div>
+    <div class="flow">
+      <div class="fname">규제혁신 우수사례<small>공적기간 '25.7.1~'26.8.31</small></div>
+      <div class="stages">
+        <span class="stage">제출 5.12~6.15</span><span class="arr">→</span>
+        <span class="stage">실무검토 6.16~19</span><span class="arr">→</span>
+        <span class="stage">1차 예비 6.22~26</span><span class="arr">→</span>
+        <span class="stage cur">2차 예비 6.29~7.3</span><span class="arr">→</span>
+        <span class="stage">본심사·시상 7월</span><span class="arr">→</span>
+        <span class="stage">행안부 경진대회 ~8.31</span>
+      </div>
+    </div>
+    <div class="flow">
+      <div class="fname">법령제도개선<small>분기별 정기건의 + 수시</small></div>
+      <div class="stages">
+        <span class="stage">분기별 건의 제출</span><span class="arr">→</span>
+        <span class="stage cur">현장분석·부처협의</span><span class="arr">→</span>
+        <span class="stage">지방규제혁신위 검토·조정</span><span class="arr">→</span>
+        <span class="stage">수용 시 이행점검(상·하반기)</span>
+      </div>
+    </div>
+  </div>
+  <div class="panel">
+    <h2>월별 캘린더</h2>
+    <div class="months">
+      <div class="m">분기별</div><div class="d"><span class="tag g1">창의제안</span>우수제안 선정회의(연 4회) · <span class="tag g3">법령제도</span>정기건의 제출</div>
+      <div class="m">5월</div><div class="d"><span class="tag g2">우수사례</span>선발계획 시행 · 사례 제출 시작(5.12)</div>
+      <div class="m">6월</div><div class="d"><span class="tag g2">우수사례</span>제출 마감(6.15) → 실무검토 → 1·2차 예비심사</div>
+      <div class="m">7월</div><div class="d"><span class="tag g2">우수사례</span>본심사(규제개혁위) · 시상 · 결과 공유</div>
+      <div class="m">8월</div><div class="d"><span class="tag g2">우수사례</span>행안부 경진대회 제출(8.31 한) · 공적기간 종료(8.31)</div>
+      <div class="m">12월</div><div class="d"><span class="tag g2">우수사례</span>행안부 유공 표창 대상자 추천</div>
+    </div>
+    <p class="note">심사기준 — 우수사례: 창의성 30·난이도 40·효과성 20·확산가능성 10 / 창의제안: 실현가능성·창의성·중요도·효과성</p>
+  </div>
+</section>
+
+</div></main>
+
+<footer><div class="wrap">
+  <span>서울관광재단 · 규제혁신·창의제안 통합 관리</span>
+  <span>데이터 원천: 통합관리대장 엑셀 — 대장 갱신 후 재배포하면 이 페이지도 최신화됩니다</span>
+</div></footer>
+
+<script>
+const DATA = [{"유형": "창의제안", "연도": "2026년", "차수": "1차", "부서": "글로벌마케팅팀", "제목": "AI 기반 외국인 교통약자 실시간 이동권 보장 체계", "분야": "지정주제(협업제안)", "제출처": "서울시(창의규제담당관)", "상태": "제출완료", "비고": ""}, {"유형": "창의제안", "연도": "2026년", "차수": "1차", "부서": "글로벌마케팅팀", "제목": "AI 기반 ‘서울 관광 안전 네비게이션’ 구축 - 부제 : 실시간 데이터 결합을 통한 인파 분산 및 사고 예방 -", "분야": "지정주제(협업제안)", "제출처": "서울시(창의규제담당관)", "상태": "제출완료", "비고": ""}, {"유형": "창의제안", "연도": "2026년", "차수": "1차", "부서": "관광브랜드팀", "제목": "잘 팔리는 굿즈만! AI기반 서울마이소울샵 재고 수급", "분야": "지정주제(협업제안)", "제출처": "서울시(창의규제담당관)", "상태": "제출완료", "비고": ""}, {"유형": "창의제안", "연도": "2026년", "차수": "1차", "부서": "관광서비스팀", "제목": "행사 운영 영향도 사전 분석 AI 플랫폼", "분야": "지정주제(협업제안)", "제출처": "서울시(창의규제담당관)", "상태": "제출완료", "비고": ""}, {"유형": "창의제안", "연도": "2026년", "차수": "1차", "부서": "MICE전략팀", "제목": "AI 기반「국제회의 유치 제안서 원스톱 자동화 시스템」구축", "분야": "지정주제(협업제안)", "제출처": "서울시(창의규제담당관)", "상태": "제출완료", "비고": ""}, {"유형": "창의제안", "연도": "2026년", "차수": "1차", "부서": "홍보팀", "제목": "에코 서울! 기필코 서울! 업그레이드‘기후동행’", "분야": "지정주제(협업제안)", "제출처": "서울시(창의규제담당관)", "상태": "제출완료", "비고": ""}, {"유형": "창의제안", "연도": "2026년", "차수": "1차", "부서": "홍보팀", "제목": "머무르고 싶은 도시 서울, 외국인‘서울 한달살기’지원 프로그램 운영", "분야": "자율주제", "제출처": "서울시(창의규제담당관)", "상태": "제출완료", "비고": ""}, {"유형": "창의제안", "연도": "2026년", "차수": "1차", "부서": "관광인프라팀", "제목": "서울 이스포츠 관광 활성화", "분야": "자율주제", "제출처": "서울시(창의규제담당관)", "상태": "제출완료", "비고": ""}, {"유형": "창의제안", "연도": "2026년", "차수": "1차", "부서": "MICE마케팅팀", "제목": "관광·MICE스타트업 구글토큰 바우처사업", "분야": "지정주제(협업제안)", "제출처": "서울시(창의규제담당관)", "상태": "제출완료", "비고": ""}, {"유형": "창의제안", "연도": "2026년", "차수": "2차", "부서": "글로벌관광산업팀", "제목": "넷플릭스 속 서울, 여행이 되다 -서울 콘텐츠 로케이션 플랫폼 사업-", "분야": "자율주제", "제출처": "서울시(창의규제담당관)", "상태": "제출완료", "비고": ""}, {"유형": "창의제안", "연도": "2026년", "차수": "2차", "부서": "글로벌관광산업팀", "제목": "서울 일상 체험형 관광상품 발굴·지원 계획(안)", "분야": "자율주제", "제출처": "서울시(창의규제담당관)", "상태": "제출완료", "비고": ""}, {"유형": "창의제안", "연도": "2026년", "차수": "2차", "부서": "디지털마케팅팀", "제목": "유튜브 데이터 수집 자동화 및 API 기반 혁신", "분야": "지정주제(빅데이터)", "제출처": "서울시(창의규제담당관)", "상태": "제출완료", "비고": ""}, {"유형": "창의제안", "연도": "2026년", "차수": "2차", "부서": "디지털마케팅팀", "제목": "인공지능 기반 비짓서울 평판관리 서비스 도입", "분야": "지정주제(빅데이터)", "제출처": "서울시(창의규제담당관)", "상태": "제출완료", "비고": ""}, {"유형": "창의제안", "연도": "2026년", "차수": "2차", "부서": "디지털마케팅팀", "제목": "AI 기반 관광기념품 재고 관리 시스템 구축·운영", "분야": "지정주제(빅데이터)", "제출처": "서울시(창의규제담당관)", "상태": "제출완료", "비고": ""}, {"유형": "창의제안", "연도": "2026년", "차수": "2차", "부서": "경영지원팀", "제목": "대시민 안전체험 지역축제 개최", "분야": "자율주제", "제출처": "서울시(창의규제담당관)", "상태": "제출완료", "비고": ""}, {"유형": "창의제안", "연도": "2026년", "차수": "2차", "부서": "경영지원팀", "제목": "서울 시정연구 통합 대시보드 플랫폼 구축", "분야": "자율주제", "제출처": "서울시(창의규제담당관)", "상태": "제출완료", "비고": ""}, {"유형": "창의제안", "연도": "2026년", "차수": "2차", "부서": "경영지원팀", "제목": "유휴 공영주차장 물류거점화", "분야": "자율주제", "제출처": "서울시(창의규제담당관)", "상태": "제출완료", "비고": ""}, {"유형": "창의제안", "연도": "2026년", "차수": "2차", "부서": "관광서비스팀", "제목": "의료친화 숙박시설 선정을 통한 규제 혁신", "분야": "규제혁신", "제출처": "서울시(창의규제담당관)", "상태": "제출완료", "비고": ""}, {"유형": "창의제안", "연도": "2026년", "차수": "2차", "부서": "관광축제이벤트팀", "제목": "SEOUL UP, ART UP 업사이클링 아트 위크", "분야": "자율주제", "제출처": "서울시(창의규제담당관)", "상태": "발굴", "비고": ""}, {"유형": "창의제안", "연도": "2026년", "차수": "2차", "부서": "관광축제이벤트팀", "제목": "데이터 기반 야외 공공행사 운영 기준 표준화", "분야": "지정주제(빅데이터)", "제출처": "서울시(창의규제담당관)", "상태": "발굴", "비고": ""}, {"유형": "창의제안", "연도": "2026년", "차수": "2차", "부서": "인사팀", "제목": "공적 항공마일리지 기관 통합 적립·사용 제도 도입", "분야": "지정주제(규제혁신)", "제출처": "서울시(창의규제담당관)", "상태": "발굴", "비고": ""}, {"유형": "창의제안", "연도": "2026년", "차수": "2차", "부서": "인사팀", "제목": "서울형 언더그라운드 관광 거점 조성", "분야": "자율주제", "제출처": "서울시(창의규제담당관)", "상태": "발굴", "비고": ""}, {"유형": "창의제안", "연도": "2026년", "차수": "2차", "부서": "인사팀", "제목": "지하철역 폐의약품 수거함 설치 제안", "분야": "자율주제", "제출처": "서울시(창의규제담당관)", "상태": "발굴", "비고": ""}, {"유형": "창의제안", "연도": "2026년", "차수": "2차", "부서": "인사팀", "제목": "폭염·한파 대응 「움직이는 관광안내소 기후대응수당」신설", "분야": "지정주제(규제혁신)", "제출처": "서울시(창의규제담당관)", "상태": "발굴", "비고": ""}, {"유형": "창의제안", "연도": "2026년", "차수": "2차", "부서": "홍보팀", "제목": "여성 안심 귀가를 위한 「실시간 체감 안전 길안내 서비스」 구축", "분야": "자율주제", "제출처": "서울시(창의규제담당관)", "상태": "발굴", "비고": ""}, {"유형": "창의제안", "연도": "2026년", "차수": "2차", "부서": "글로벌마케팅팀", "제목": "AI가 추천하는 도시 ‘서울’ 만들기", "분야": "자율주제", "제출처": "서울시(창의규제담당관)", "상태": "발굴", "비고": ""}, {"유형": "창의제안", "연도": "2026년", "차수": "2차", "부서": "MICE마케팅팀", "제목": "종합여행업 자본금 규제 완화 및 창업 활성화", "분야": "지정주제(규제혁신)", "제출처": "서울시(창의규제담당관)", "상태": "발굴", "비고": ""}, {"유형": "창의제안", "연도": "2026년", "차수": "2차", "부서": "예술상생관광팀", "제목": "서울다누림차량 장애인 우선 예약제 도입", "분야": "지정주제(규제혁신)", "제출처": "서울시(창의규제담당관)", "상태": "발굴", "비고": ""}, {"유형": "창의제안", "연도": "2026년", "차수": "2차", "부서": "관광인프라팀", "제목": "K-농촌 체험관광 활성화(K-Farm Stay) 사업", "분야": "자율주제", "제출처": "서울시(창의규제담당관)", "상태": "발굴", "비고": ""}, {"유형": "창의제안", "연도": "2026년", "차수": "2차", "부서": "관광자원개발팀", "제목": "AI 활용 등산관광센터 안내 서비스 고도화", "분야": "자율주제", "제출처": "서울시(창의규제담당관)", "상태": "발굴", "비고": ""}, {"유형": "규제혁신 우수사례", "연도": "2026년", "차수": "연 1회", "부서": "관광인프라팀", "제목": "서울 관광불편신고센터 운영체계 개선", "분야": "민생규제 개선", "제출처": "서울시(창의규제담당관)", "상태": "심사중", "비고": ""}, {"유형": "규제혁신 우수사례", "연도": "2026년", "차수": "연 1회", "부서": "관광인프라팀", "제목": "서울 관광정보센터 여름철 한시적 무더위 쉼터 운영", "분야": "자치법규", "제출처": "서울시(창의규제담당관)", "상태": "심사중", "비고": ""}, {"유형": "규제혁신 우수사례", "연도": "2026년", "차수": "연 1회", "부서": "예술상생관광팀", "제목": "서울다누림차량 장애인 우선 예약제 도입", "분야": "민생규제 개선", "제출처": "서울시(창의규제담당관)", "상태": "심사중", "비고": ""}, {"유형": "규제혁신 우수사례", "연도": "2026년", "차수": "연 1회", "부서": "디지털마케팅팀", "제목": "서울관광 공식 홈페이지 “Visit Seoul” 콘텐츠 등록 절차 간소화로 외국인 대상 글로벌 홍보 지원 강화", "분야": "민생규제 개선", "제출처": "서울시(창의규제담당관)", "상태": "심사중", "비고": ""}, {"유형": "법령제도개선", "연도": "2026년", "차수": "1분기", "부서": "AI혁신팀", "제목": "공공-민간 연계 제도 개선을 통한 관광서비스 품질 향상", "분야": "민생규제", "제출처": "서울시(창의규제담당관)", "상태": "제출완료", "비고": "상반기 지자체 규제개선 건의과제"}, {"유형": "법령제도개선", "연도": "2026년", "차수": "2분기", "부서": "인사팀", "제목": "지방출자·출연기관 육아휴직 대체인력 초과현원 한시 허용 확대 적용", "분야": "민생규제", "제출처": "서울시(창의규제담당관)", "상태": "제출완료", "비고": ""}, {"유형": "법령제도개선", "연도": "2026년", "차수": "2분기", "부서": "MICE마케팅팀", "제목": "무슬림 친화 표시제 도입", "분야": "지역산업 규제", "제출처": "서울시(창의규제담당관)", "상태": "제출완료", "비고": ""}, {"유형": "법령제도개선", "연도": "2026년", "차수": "2분기", "부서": "예술상생관광팀", "제목": "서울다누림차량 장애인 우선 예약제 도입", "분야": "민생규제", "제출처": "서울시(창의규제담당관)", "상태": "제출완료", "비고": ""}, {"유형": "법령제도개선", "연도": "2026년", "차수": "2분기", "부서": "디지털마케팅팀", "제목": "외국인 관광객 대상 유료 투어가이드 자격기준 완화로 건축·예술 등 특수목적관광(SIT) 활성화", "분야": "민생규제", "제출처": "서울시(창의규제담당관)", "상태": "제출완료", "비고": ""}];
+const TYPES = ['창의제안','규제혁신 우수사례','법령제도개선'];
+const TCLS = {'창의제안':'t1','규제혁신 우수사례':'t2','법령제도개선':'t3'};
+const byType = t => DATA.filter(d=>d.유형===t);
+const done = d => d.상태==='제출완료';
+
+/* nav */
+const nav = document.getElementById('nav');
+function show(id){
+  document.querySelectorAll('main section').forEach(s=>s.classList.toggle('on', s.id===id));
+  nav.querySelectorAll('a').forEach(a=>a.classList.toggle('on', a.hash==='#'+id));
+}
+nav.addEventListener('click',e=>{
+  const a=e.target.closest('a'); if(!a) return;
+  e.preventDefault(); history.replaceState(null,'',a.hash); show(a.hash.slice(1));
+  window.scrollTo({top:0,behavior:'instant'});
+});
+if(['#home','#status','#programs','#schedule'].includes(location.hash)) show(location.hash.slice(1));
+
+document.getElementById('totline').textContent = `전체 ${DATA.length}건 · 제출완료 ${DATA.filter(done).length} · 심사중 ${DATA.filter(d=>d.상태==='심사중').length} · 발굴 ${DATA.filter(d=>d.상태==='발굴').length}`;
+
+/* summary cards */
+document.getElementById('cards').innerHTML = `
+  <div class="card"><div class="label">전체 발굴 과제</div><div class="num">${DATA.length}</div>
+    <div class="sub">15개 부서 참여</div></div>` +
+  TYPES.map(t=>{
+    const g=byType(t);
+    const extra = t==='규제혁신 우수사례' ? `심사중 ${g.filter(d=>d.상태==='심사중').length}건`
+                : `제출완료 ${g.filter(done).length}건`;
+    return `<div class="card ${TCLS[t]}"><div class="label">${t}</div><div class="num">${g.length}</div>
+      <div class="sub">${extra}</div></div>`;
+  }).join('');
+
+/* dept bars */
+const depts = {};
+DATA.forEach(d=>{ (depts[d.부서]=depts[d.부서]||{c:0,t:{}}); depts[d.부서].c++;
+  depts[d.부서].t[d.유형]=(depts[d.부서].t[d.유형]||0)+1; });
+const sorted = Object.entries(depts).sort((a,b)=>b[1].c-a[1].c);
+const max = sorted[0][1].c;
+document.getElementById('deptbars').innerHTML = sorted.map(([name,v])=>{
+  const segs = TYPES.map((t,i)=> v.t[t] ? `<span class="seg${i+1}" style="width:${v.t[t]/max*100}%"></span>` : '').join('');
+  return `<div class="bar-row"><span class="name" title="${name}">${name}</span>
+    <span class="track">${segs}</span><span class="cnt">${v.c}</span></div>`;
+}).join('');
+
+/* status lines */
+const states = ['발굴','내부검토','제출완료','심사중','선정','미선정','후속조치완료'];
+const sc = {}; DATA.forEach(d=>sc[d.상태]=(sc[d.상태]||0)+1);
+document.getElementById('statlines').innerHTML = states.filter(s=>sc[s]).map(s=>
+  `<div class="stat-line"><span>${s}</span><span class="v">${sc[s]}건</span></div>`).join('');
+
+/* table */
+let curType='전체';
+const tf = document.getElementById('typefilters');
+tf.innerHTML = ['전체',...TYPES].map(t=>`<button class="fbtn${t==='전체'?' on':''}" data-t="${t}">${t}</button>`).join('');
+tf.addEventListener('click',e=>{
+  const b=e.target.closest('.fbtn'); if(!b) return;
+  curType=b.dataset.t;
+  tf.querySelectorAll('.fbtn').forEach(x=>x.classList.toggle('on',x===b));
+  render();
+});
+document.getElementById('q').addEventListener('input',render);
+function render(){
+  const q=document.getElementById('q').value.trim().toLowerCase();
+  const list=DATA.filter(d=>(curType==='전체'||d.유형===curType) &&
+    (!q||(d.제목+d.부서+d.분야).toLowerCase().includes(q)));
+  document.getElementById('tbody').innerHTML=list.map((d,i)=>`<tr>
+    <td class="num">${i+1}</td>
+    <td><span class="chip ${TCLS[d.유형]}">${d.유형}</span></td>
+    <td class="num">${d.차수}</td><td>${d.부서}</td>
+    <td>${d.제목}</td><td style="color:var(--sub)">${d.분야}</td>
+    <td><span class="st${d.상태==='심사중'?' review':done(d)?'':' pending'}">${d.상태}</span></td></tr>`).join('')
+    || '<tr><td colspan="7" style="text-align:center;color:var(--sub);padding:24px">조건에 맞는 과제가 없습니다</td></tr>';
+  document.getElementById('cnote').textContent=`${list.length}건 표시 중 (전체 ${DATA.length}건)`;
+}
+render();
+</script>
