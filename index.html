@@ -332,7 +332,8 @@
     <div class="filters" id="typefilters"></div>
     <div class="filters">
       <input type="search" id="q" placeholder="제목·부서·제안자·내용 검색">
-      <button class="btn pri mini" id="sheetbtn">🔒 구글시트 열기</button>
+      <button class="btn pri mini" id="addbtn">＋ 과제 추가</button>
+      <button class="btn pri mini" id="sheetbtn" style="background:var(--ink)">🔒 구글시트 열기</button>
     </div>
     <div class="tablewrap">
       <table>
@@ -511,6 +512,37 @@
   </div>
 </div>
 
+<div class="mback" id="aback" role="dialog" aria-modal="true">
+  <div class="modal" style="max-width:640px">
+    <div class="mtop"><span class="lbl">새 과제 추가</span><button class="mclose" id="aclose" aria-label="닫기">✕</button></div>
+    <div class="medit" style="margin-top:18px">
+      <div class="frow" style="grid-template-columns:1fr 1fr 1fr">
+        <div><label>유형</label>
+          <select id="a_type"><option>기타 제안</option><option>창의제안</option><option>규제혁신 우수사례</option><option>법령제도개선</option></select></div>
+        <div><label>제출연도</label><input id="a_year" value="2026년"></div>
+        <div><label>차수/분기</label><input id="a_round" placeholder="예: 3차 / 3분기 / -"></div>
+      </div>
+      <div class="frow" style="grid-template-columns:1fr 1fr 1fr">
+        <div><label>발굴부서</label><input id="a_dept" placeholder="예: 디지털마케팅팀"></div>
+        <div><label>제안자</label><input id="a_who" placeholder="예: 홍길동(100%)"></div>
+        <div><label>주제/분야</label><input id="a_field" placeholder="예: 자율주제"></div>
+      </div>
+      <div style="margin-bottom:10px"><label>제목 (필수)</label><input id="a_title" placeholder="과제 제목을 입력하세요"></div>
+      <div style="margin-bottom:10px"><label>세부내용</label><textarea id="a_detail" style="min-height:90px" placeholder="【현황·문제점】 ...&#10;【개선방안】 ...&#10;【기대효과】 ... 형식으로 쓰면 팝업에서 섹션으로 표시됩니다"></textarea></div>
+      <div class="frow" style="grid-template-columns:1fr 2fr">
+        <div><label>진행상태</label>
+          <select id="a_state"><option>발굴</option><option>내부검토</option><option>제출완료</option><option>심사중</option></select></div>
+        <div><label>비고</label><input id="a_note" placeholder="메모 (선택)"></div>
+      </div>
+      <div class="mbtns">
+        <button class="btn pri" id="a_save">추가</button>
+        <button class="btn ghost" id="a_cancel">취소</button>
+        <span class="savemsg" id="a_msg"></span>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script>
 /* ===== 데이터 소스 ===== */
 const TASK_SHEET = '1ZXlXeCkBfpXDeB5ix3-_7V-it2GjFTmxhpuSLmIvkJ8';
@@ -535,6 +567,15 @@ let LOCAL = {};
 try{ LOCAL = JSON.parse(localStorage.getItem('reg_local')||'{}'); }catch(e){}
 function saveLocal(){ try{ localStorage.setItem('reg_local', JSON.stringify(LOCAL)); }catch(e){} }
 function applyLocal(){ if(WRITE_ENDPOINT && LIVE) return; DATA.forEach(d=>{ const o=LOCAL[pinKey(d)]; if(o) Object.assign(d,o); }); }
+let ADDS = [];
+try{ ADDS = JSON.parse(localStorage.getItem('reg_adds')||'[]'); }catch(e){}
+function saveAdds(){ try{ localStorage.setItem('reg_adds', JSON.stringify(ADDS)); }catch(e){} }
+function mergeAdds(){
+  const keys = new Set(DATA.map(pinKey));
+  ADDS = ADDS.filter(a=>!keys.has(pinKey(a)));   /* 시트에 이미 반영된 건 제거 */
+  saveAdds();
+  DATA = ADDS.concat(DATA);
+}
 const stCls = d => d.상태==='심사중' ? 'review' : done(d) ? 'done' : 'pending';
 const esc = s => String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 
@@ -842,6 +883,41 @@ document.getElementById('e_save').addEventListener('click', async ()=>{
   }
 });
 
+/* 과제 추가 */
+const aback = document.getElementById('aback');
+document.getElementById('addbtn').addEventListener('click', ()=>{
+  ['a_round','a_dept','a_who','a_field','a_title','a_detail','a_note'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('a_year').value = curYear();
+  document.getElementById('a_state').value = '발굴';
+  document.getElementById('a_msg').textContent = '';
+  aback.classList.add('on'); document.body.style.overflow='hidden';
+});
+function closeAdd(){ aback.classList.remove('on'); document.body.style.overflow=''; }
+document.getElementById('aclose').addEventListener('click', closeAdd);
+document.getElementById('a_cancel').addEventListener('click', closeAdd);
+aback.addEventListener('click', e=>{ if(e.target===aback) closeAdd(); });
+document.getElementById('a_save').addEventListener('click', async ()=>{
+  const v = id => document.getElementById(id).value.trim();
+  const msg = document.getElementById('a_msg');
+  if(!v('a_title')){ msg.textContent = '제목을 입력해주세요'; return; }
+  const d = { 유형:v('a_type'), 연도:v('a_year')||'2026년', 차수:v('a_round')||'-',
+              부서:v('a_dept'), 제안자:v('a_who'), 제목:v('a_title'), 분야:v('a_field'),
+              상태:v('a_state'), 결과:'', 후속조치:'', 세부내용:v('a_detail'), 비고:v('a_note') };
+  if(DATA.some(x=>pinKey(x)===pinKey(d))){ msg.textContent = '같은 유형·제목의 과제가 이미 있습니다'; return; }
+  DATA.unshift(d);
+  ADDS.unshift(d); saveAdds();
+  renderAll();
+  closeAdd();
+  document.getElementById('cnote').textContent = '✓ 과제가 추가되었습니다 — 시트 반영은 잠시 후 새로고침으로 확인하세요';
+  if(WRITE_ENDPOINT){
+    fetch(WRITE_ENDPOINT, {method:'POST', mode:'no-cors',
+      headers:{'Content-Type':'text/plain'},
+      body: JSON.stringify({action:'add', row:{'유형':d.유형,'제출연도':d.연도,'차수/분기':d.차수,'발굴부서':d.부서,
+        '제안자':d.제안자,'제목':d.제목,'주제/분야':d.분야,'진행상태':d.상태,'결과':'','후속조치':'',
+        '세부내용':d.세부내용,'비고':d.비고}})}).catch(()=>{});
+  }
+});
+
 /* 시트 바로가기 (비밀번호) */
 const SHEET_URL = 'https://docs.google.com/spreadsheets/d/' + TASK_SHEET + '/edit';
 function gateSheet(e){
@@ -878,6 +954,7 @@ document.getElementById('e_sheet').addEventListener('click', gateSheet);
     if(s.length){ SCHED = s; ok++; }
   }catch(e){}
   LIVE = ok===2;
+  mergeAdds();
   applyLocal();
   src.textContent = ok===2
     ? '구글시트 실시간 연동 · ' + new Date().toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'}) + ' 불러옴'
