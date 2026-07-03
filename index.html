@@ -528,7 +528,9 @@
         <div><label>주제/분야</label><input id="a_field" placeholder="예: 자율주제"></div>
       </div>
       <div style="margin-bottom:10px"><label>제목 (필수)</label><input id="a_title" placeholder="과제 제목을 입력하세요"></div>
-      <div style="margin-bottom:10px"><label>세부내용</label><textarea id="a_detail" style="min-height:90px" placeholder="【현황·문제점】 ...&#10;【개선방안】 ...&#10;【기대효과】 ... 형식으로 쓰면 팝업에서 섹션으로 표시됩니다"></textarea></div>
+      <div style="margin-bottom:10px"><label style="color:var(--coral-tx)">⚠️ 현황·문제점</label><textarea id="a_cur" style="min-height:64px" placeholder="현재 어떤 문제가 있는지 (예: ~한 규제로 인해 ~한 불편 발생)"></textarea></div>
+      <div style="margin-bottom:10px"><label style="color:var(--pri-tx)">🛠️ 개선방안</label><textarea id="a_plan" style="min-height:64px" placeholder="어떻게 바꾸자는 것인지 (예: ~를 도입/개정하여 ~하도록 개선)"></textarea></div>
+      <div style="margin-bottom:10px"><label style="color:var(--teal-tx)">📈 기대효과</label><textarea id="a_eff" style="min-height:64px" placeholder="개선되면 무엇이 좋아지는지"></textarea></div>
       <div class="frow" style="grid-template-columns:1fr 2fr">
         <div><label>진행상태</label>
           <select id="a_state"><option>발굴</option><option>내부검토</option><option>제출완료</option><option>심사중</option></select></div>
@@ -886,7 +888,7 @@ document.getElementById('e_save').addEventListener('click', async ()=>{
 /* 과제 추가 */
 const aback = document.getElementById('aback');
 document.getElementById('addbtn').addEventListener('click', ()=>{
-  ['a_round','a_dept','a_who','a_field','a_title','a_detail','a_note'].forEach(id=>document.getElementById(id).value='');
+  ['a_round','a_dept','a_who','a_field','a_title','a_cur','a_plan','a_eff','a_note'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('a_year').value = curYear();
   document.getElementById('a_state').value = '발굴';
   document.getElementById('a_msg').textContent = '';
@@ -900,9 +902,11 @@ document.getElementById('a_save').addEventListener('click', async ()=>{
   const v = id => document.getElementById(id).value.trim();
   const msg = document.getElementById('a_msg');
   if(!v('a_title')){ msg.textContent = '제목을 입력해주세요'; return; }
+  const secs = [['현황·문제점',v('a_cur')],['개선방안',v('a_plan')],['기대효과',v('a_eff')]]
+    .filter(x=>x[1]).map(x=>'【'+x[0]+'】 '+x[1]).join('\n');
   const d = { 유형:v('a_type'), 연도:v('a_year')||'2026년', 차수:v('a_round')||'-',
               부서:v('a_dept'), 제안자:v('a_who'), 제목:v('a_title'), 분야:v('a_field'),
-              상태:v('a_state'), 결과:'', 후속조치:'', 세부내용:v('a_detail'), 비고:v('a_note') };
+              상태:v('a_state'), 결과:'', 후속조치:'', 세부내용:secs, 비고:v('a_note') };
   if(DATA.some(x=>pinKey(x)===pinKey(d))){ msg.textContent = '같은 유형·제목의 과제가 이미 있습니다'; return; }
   DATA.unshift(d);
   ADDS.unshift(d); saveAdds();
