@@ -61,7 +61,8 @@
   .stat.v3 .num{color:var(--coral-tx)} .stat.v4 .num{color:var(--sub)}
   .stat .lb{font-size:.76rem;color:var(--sub);font-weight:700;margin-top:3px}
 
-  .grid2{display:grid;grid-template-columns:3fr 2fr;gap:16px;margin-bottom:16px}
+  .grid2{display:grid;grid-template-columns:3fr 2fr;gap:16px;margin-bottom:16px;align-items:stretch}
+  .grid2>.panel{margin-top:0;height:100%}
   @media(max-width:860px){.grid2{grid-template-columns:1fr}}
 
   /* alert rows */
