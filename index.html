@@ -105,7 +105,7 @@
         font-family:inherit;flex:1;min-width:170px;background:#fff;color:var(--ink)}
   .tablewrap{overflow-x:auto;border-radius:14px;border:1px solid var(--line)}
   table{border-collapse:collapse;width:100%;font-size:.83rem;min-width:800px}
-  th{background:#f6f7fd;color:var(--sub);font-weight:700;text-align:left;padding:11px 14px;
+  th{background:#f6f7fd;color:var(--sub);font-weight:700;text-align:left;padding:11px 14px;cursor:pointer;user-select:none;
      font-size:.73rem;letter-spacing:.03em;white-space:nowrap}
   td{padding:10px 14px;border-top:1px solid var(--line);vertical-align:top}
   tbody tr{cursor:pointer}
@@ -476,8 +476,8 @@
         <span class="stage">제출 5.12~6.15</span><span class="arr">→</span>
         <span class="stage">실무검토 6.16~19</span><span class="arr">→</span>
         <span class="stage">1차 예비 6.22~26</span><span class="arr">→</span>
-        <span class="stage cur">2차 예비 6.29~7.3</span><span class="arr">→</span>
-        <span class="stage">본심사·시상 7월</span><span class="arr">→</span>
+        <span class="stage">2차 예비 6.29~7.3</span><span class="arr">→</span>
+        <span class="stage cur">본심사·시상 7월</span><span class="arr">→</span>
         <span class="stage">행안부 경진대회 ~8.31</span>
       </div>
     </div>
@@ -584,7 +584,7 @@ const TCLS = {'창의제안':'t1','규제혁신 우수사례':'t2','법령제도
 const HCLS = {'창의제안':'','규제혁신 우수사례':'h2','법령제도개선':'h3','기타 제안':'h4'};
 const DONE_STATES = ['제출완료','선정','후속조치완료'];
 const done = d => DONE_STATES.includes(d.상태);
-const pinKey = d => (d.유형||'')+'|'+(d.제목||'');
+const pinKey = d => (d.유형||'')+'|'+(d.연도||'')+'|'+(d.차수||'')+'|'+(d.제목||'');
 let PINS = [];
 try{ PINS = JSON.parse(localStorage.getItem('reg_pins')||'[]'); }catch(e){}
 function savePins(){ try{ localStorage.setItem('reg_pins', JSON.stringify(PINS)); }catch(e){} }
@@ -655,7 +655,7 @@ function renderAll(){
   const CY = curYear();
   const CUR = DATA.filter(d=>d.연도===CY);
   const nDone=CUR.filter(done).length, nRev=CUR.filter(d=>d.상태==='심사중').length,
-        nPend=CUR.length-nDone-nRev;
+        nPend=CUR.filter(d=>['발굴','접수','내부검토'].includes(d.상태)).length;
   document.getElementById('kpi').innerHTML = `
     <div class="stat v1"><div class="ic">📦</div><div class="num">${CUR.length}</div><div class="lb">${CY} 발굴 과제</div></div>
     <div class="stat v2"><div class="ic">✅</div><div class="num">${nDone}</div><div class="lb">제출완료·선정</div></div>
@@ -761,10 +761,25 @@ tf.addEventListener('click',e=>{
   renderTable();
 });
 document.getElementById('q').addEventListener('input',renderTable);
+/* 헤더 클릭 정렬 */
+let sortKey=null, sortAsc=true;
+const SORT_COLS=[null,'유형','연도','차수','부서','제안자','제목','분야','상태'];
+const TH_BASE=['번호','유형','연도','차수/분기','발굴부서','제안자','제목','주제/분야','진행상태'];
+document.querySelector('#status thead tr').addEventListener('click',e=>{
+  const th=e.target.closest('th'); if(!th) return;
+  const idx=[...th.parentNode.children].indexOf(th);
+  if(!SORT_COLS[idx]) return;
+  if(sortKey===SORT_COLS[idx]) sortAsc=!sortAsc; else { sortKey=SORT_COLS[idx]; sortAsc=true; }
+  renderTable();
+});
 function renderTable(){
   const q=document.getElementById('q').value.trim().toLowerCase();
   curList=DATA.filter(d=>(curYearF==='전체'||d.연도===curYearF) && (curType==='전체'||d.유형===curType) &&
     (!q||((d.제목||'')+(d.부서||'')+(d.제안자||'')+(d.분야||'')+(d.세부내용||'')).toLowerCase().includes(q)));
+  if(sortKey) curList=[...curList].sort((a,b)=>String(a[sortKey]||'').localeCompare(String(b[sortKey]||''),'ko')*(sortAsc?1:-1));
+  document.querySelectorAll('#status thead th').forEach((th,i)=>{
+    th.textContent = TH_BASE[i] + (SORT_COLS[i]&&SORT_COLS[i]===sortKey ? (sortAsc?' ▲':' ▼') : '');
+  });
   document.getElementById('tbody').innerHTML=curList.map((d,i)=>`<tr data-i="${i}" title="클릭하면 세부내용이 열립니다">
     <td class="num">${i+1}</td>
     <td><span class="chip ${TCLS[d.유형]||'t1'}">${esc(d.유형)}</span></td>
@@ -836,7 +851,7 @@ async function persistNote(d){
     try{
       await fetch(WRITE_ENDPOINT, {method:'POST', mode:'no-cors',
         headers:{'Content-Type':'text/plain'},
-        body: JSON.stringify({key:{유형:d.유형, 제목:d.제목}, update:{비고:d.비고}})});
+        body: JSON.stringify({key:{유형:d.유형, 연도:d.연도, 차수:d.차수, 제목:d.제목}, update:{비고:d.비고}})});
     }catch(e){}
   }
   LOCAL[pinKey(d)] = Object.assign(LOCAL[pinKey(d)]||{}, {비고:d.비고});
@@ -885,6 +900,21 @@ document.getElementById('pinbtn').addEventListener('click',()=>{
 mback.addEventListener('click',e=>{ if(e.target===mback) closeDetail(); });
 document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeDetail(); });
 
+/* 저장 반영 검증 */
+async function verifyRow(d, fields){
+  await new Promise(r=>setTimeout(r, 4500));
+  for(const id of [TASK_SHEET, HIST_SHEET]){
+    try{
+      const res = await fetch(csvUrl(id));
+      if(!res.ok) continue;
+      const data = toObjects(parseCSV(await res.text()), COLMAP);
+      const row = data.find(x=>pinKey(x)===pinKey(d));
+      if(row) return fields.every(f=>String(row[f]||'').trim()===String(d[f]||'').trim());
+    }catch(e){}
+  }
+  return false;
+}
+
 /* 저장 */
 document.getElementById('e_save').addEventListener('click', async ()=>{
   if(!curDetail) return;
@@ -918,8 +948,12 @@ document.getElementById('e_save').addEventListener('click', async ()=>{
     try{
       await fetch(WRITE_ENDPOINT, {method:'POST', mode:'no-cors',
         headers:{'Content-Type':'text/plain'},
-        body: JSON.stringify({key:{유형:curDetail.유형, 제목:curDetail.제목}, update:upd})});
-      msg.textContent = '✓ 구글시트에 저장되었습니다 — 팀원 화면에도 반영됩니다';
+        body: JSON.stringify({key:{유형:curDetail.유형, 연도:curDetail.연도, 차수:curDetail.차수, 제목:curDetail.제목}, update:upd})});
+      msg.textContent = '시트 저장 확인 중…';
+      verifyRow(d, ['상태']).then(ok=>{
+        msg.textContent = ok ? '✓ 구글시트 반영 확인됨 — 팀원 화면에도 표시됩니다'
+                             : '⚠ 시트 반영이 확인되지 않았습니다 — 스크립트를 최신판(v5)으로 재배포해주세요';
+      });
     }catch(e){ msg.textContent = '전송 실패 — 시트에서 직접 수정해주세요'; }
   } else {
     msg.textContent = '✓ 이력에 기록됨(이 브라우저에 저장) — 팀 공유·영구 보존은 시트의 비고 칸에 반영하세요';
@@ -953,7 +987,12 @@ document.getElementById('a_save').addEventListener('click', async ()=>{
   ADDS.unshift(d); saveAdds();
   renderAll();
   closeAdd();
-  document.getElementById('cnote').textContent = '✓ 과제가 추가되었습니다 — 시트 반영은 잠시 후 새로고침으로 확인하세요';
+  document.getElementById('cnote').textContent = '✓ 과제가 추가되었습니다 — 시트 반영 확인 중…';
+  verifyRow(d, ['제목']).then(ok=>{
+    document.getElementById('cnote').textContent = ok
+      ? '✓ 과제가 추가되고 구글시트 반영도 확인되었습니다'
+      : '⚠ 화면에는 추가됐지만 시트 기록이 확인되지 않습니다 — 스크립트를 최신판(v5)으로 재배포해주세요';
+  });
   if(WRITE_ENDPOINT){
     fetch(WRITE_ENDPOINT, {method:'POST', mode:'no-cors',
       headers:{'Content-Type':'text/plain'},
