@@ -110,13 +110,20 @@
   td{padding:10px 14px;border-top:1px solid var(--line);vertical-align:top}
   tbody tr{cursor:pointer}
   tbody tr:hover{background:var(--pri-bg)}
-  td.num{color:var(--sub);font-variant-numeric:tabular-nums}
+  td.num{color:var(--sub);font-variant-numeric:tabular-nums;white-space:nowrap}
+  td.nw{white-space:nowrap}
   .chip{display:inline-block;font-size:.71rem;font-weight:800;padding:3px 10px;border-radius:12px;white-space:nowrap}
   .chip.t1{background:var(--pri-bg);color:var(--pri-tx)} .chip.t2{background:var(--coral-bg);color:var(--coral-tx)}
   .chip.t3{background:var(--teal-bg);color:var(--teal-tx)} .chip.grey{background:var(--ground);color:var(--sub)}
   .stp{display:inline-block;font-size:.72rem;font-weight:800;border-radius:20px;padding:3px 12px;color:#fff;white-space:nowrap}
-  .stp.done{background:var(--teal)} .stp.review{background:var(--coral)}
-  .stp.pending{background:#fff;color:var(--sub);border:1.5px solid var(--line);padding:2px 11px}
+  .stp.s-balgul{background:#fff;color:var(--sub);border:1.5px solid var(--line);padding:2px 11px}
+  .stp.s-jupsu{background:var(--amber-bg);color:var(--amber-tx)}
+  .stp.s-naebu{background:var(--cyan-bg);color:var(--cyan-tx)}
+  .stp.s-jechul{background:var(--pri)}
+  .stp.s-simsa{background:var(--coral)}
+  .stp.s-sunjeong{background:var(--teal)}
+  .stp.s-misun{background:#8d93ab}
+  .stp.s-husok{background:#0e7568}
   .count-note{font-size:.78rem;color:var(--sub);margin:12px 2px 0}
 
   /* programs */
@@ -594,7 +601,9 @@ function mergeAdds(){
   saveAdds();
   DATA = ADDS.concat(DATA);
 }
-const stCls = d => d.상태==='심사중' ? 'review' : done(d) ? 'done' : 'pending';
+const ST_CLS = {'발굴':'s-balgul','접수':'s-jupsu','내부검토':'s-naebu','제출완료':'s-jechul',
+                '심사중':'s-simsa','선정':'s-sunjeong','미선정':'s-misun','후속조치완료':'s-husok'};
+const stCls = d => ST_CLS[d.상태] || 's-balgul';
 const esc = s => String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 
 document.getElementById('todayline').textContent =
@@ -690,7 +699,7 @@ function renderAll(){
   document.getElementById('yearbars').innerHTML = ycnt.map(x=>{
     let tip = TYPES.map((t,i)=> x.t[i] ? t+' '+x.t[i]+'건' : '').filter(Boolean).join(' · ');
     if(x.sub < x.total) tip += ' | 서울시 제출 ' + x.sub + '건 · 기관 접수만 ' + (x.total - x.sub) + '건';
-    const segs = x.t.map((n,i)=> n ? `<span class="seg${i+1}" style="width:${n/ymax*100}%"></span>` : '').join('');
+    const segs = x.t.map((n,i)=> n ? `<span class="seg${i+1}" title="${esc(x.y)} ${esc(TYPES[i])} ${n}건" style="width:${n/ymax*100}%"></span>` : '').join('');
     return `<div class="bar-row" title="${esc(tip)}"><span class="name">${esc(x.y)}</span>
       <span class="track">${segs}</span><span class="cnt">${x.total}</span></div>`;
   }).join('');
@@ -759,7 +768,7 @@ function renderTable(){
   document.getElementById('tbody').innerHTML=curList.map((d,i)=>`<tr data-i="${i}" title="클릭하면 세부내용이 열립니다">
     <td class="num">${i+1}</td>
     <td><span class="chip ${TCLS[d.유형]||'t1'}">${esc(d.유형)}</span></td>
-    <td class="num">${esc(d.연도)}</td><td class="num">${esc(d.차수)}</td><td>${esc(d.부서)}</td><td>${esc(d.제안자)}</td>
+    <td class="num">${esc(d.연도)}</td><td class="num">${esc(d.차수)}</td><td class="nw">${esc(d.부서)}</td><td>${esc(d.제안자)}</td>
     <td>${esc(d.제목)}</td><td style="color:var(--sub)">${esc(d.분야)}</td>
     <td><span class="stp ${stCls(d)}">${esc(d.상태)}</span></td></tr>`).join('')
     || '<tr><td colspan="9" style="text-align:center;color:var(--sub);padding:24px">조건에 맞는 과제가 없습니다</td></tr>';
