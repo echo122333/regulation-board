@@ -597,7 +597,12 @@ try{ ADDS = JSON.parse(localStorage.getItem('reg_adds')||'[]'); }catch(e){}
 function saveAdds(){ try{ localStorage.setItem('reg_adds', JSON.stringify(ADDS)); }catch(e){} }
 function mergeAdds(){
   const keys = new Set(DATA.map(pinKey));
-  ADDS = ADDS.filter(a=>!keys.has(pinKey(a)));   /* 시트에 이미 반영된 건 제거 */
+  const grace = Date.now() - 10*60*1000; /* 시트 기록 대기 유예 10분 */
+  ADDS = ADDS.filter(a=>{
+    if(keys.has(pinKey(a))) return false;              /* 시트에 반영 완료 → 백업 불필요 */
+    if(LIVE && WRITE_ENDPOINT) return (a._ts||0) > grace; /* 시트에 없음 = 삭제된 것 → 존중 */
+    return true;                                        /* 시트 미연동 시에만 보존 */
+  });
   saveAdds();
   DATA = ADDS.concat(DATA);
 }
@@ -979,7 +984,7 @@ document.getElementById('a_save').addEventListener('click', async ()=>{
   if(!v('a_title')){ msg.textContent = '제목을 입력해주세요'; return; }
   const secs = [['현황·문제점',v('a_cur')],['개선방안',v('a_plan')],['기대효과',v('a_eff')]]
     .filter(x=>x[1]).map(x=>'【'+x[0]+'】 '+x[1]).join('\n');
-  const d = { 유형:v('a_type'), 연도:v('a_year')||'2026년', 차수:v('a_round')||'-',
+  const d = { _ts: Date.now(), 유형:v('a_type'), 연도:v('a_year')||'2026년', 차수:v('a_round')||'-',
               부서:v('a_dept'), 제안자:v('a_who'), 제목:v('a_title'), 분야:v('a_field'),
               상태:v('a_state'), 결과:'', 후속조치:'', 세부내용:secs, 비고:v('a_note') };
   if(DATA.some(x=>pinKey(x)===pinKey(d))){ msg.textContent = '같은 유형·제목의 과제가 이미 있습니다'; return; }
